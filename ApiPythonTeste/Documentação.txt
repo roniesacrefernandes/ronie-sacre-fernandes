@@ -1,0 +1,92 @@
+## Documentação da API
+
+**Introdução**
+
+* **Nome da API:** API de Gerenciamento de Dados 
+* **Descrição:** Esta API fornece endpoints para processar dados, gerenciar históricos e realizar buscas.
+* **Versão:** 1.0
+* **Base URL:** http://127.0.0.1:5000/ 
+
+**Endpoints**
+
+### 1. `/processar_dados`
+
+* **Método:** POST
+* **Descrição:** Processa dados recebidos em formato JSON e os armazena na collection boletim no banco de dados MongoDB.
+                 Grava a data e o nome do arquivo esecolhido na collection historico no banco de dados MongoDB.
+* **Parâmetros de Requisição:**
+    * `file_data` (lista de dicionários, obrigatório): Lista de dados a serem processados.
+    * `historico` (string, obrigatório): Nome do arquivo ou identificador do histórico.
+* **Corpo da Requisição:**
+    ```json
+    {
+        "file_data": [
+            {"campo1": "valor1", "campo2": "valor2"},
+            {"campo1": "valor3", "campo2": "valor4"}
+        ],
+        "historico": "arquivo_processado_1"
+    }
+    ```
+* **Resposta:**
+    * **200 OK:** 
+        ```json
+        {
+            "message": "Arquivo processado com sucesso"
+        }
+        ```
+    * **400 Bad Request:** 
+        ```json
+        {
+            "message": "Historico ja existe"
+        }
+        ```
+
+### 2. `/historico`
+
+* **Método:** POST
+* **Descrição:** Busca registros históricos com base nos filtros fornecidos.
+* **Parâmetros de Requisição:**
+    * `data` (string, opcional): Data do histórico no formato "dd/mm/aaaa".
+    * `arquivo` (string, opcional): Nome do arquivo do histórico.
+* **Corpo da Requisição:**
+    ```json
+    {
+        "data": "2025-02-06", 
+        "arquivo": "arquivo_processado_1"
+    }
+    ```
+* **Resposta:**
+    * **200 OK:**
+        ```json
+        {
+            "registro": [
+                {"DtHistorico": "2025-02-05", "NomeArq": "arquivo_processado_1"},
+                {"DtHistorico": "2025-02-06", "NomeArq": "arquivo_processado_2"} 
+            ]
+        }
+        ```
+    * **500 Internal Server Error:** Erro interno do servidor.
+
+### 3. `/buscar`
+
+* **Método:** POST
+* **Descrição:** Busca registros com base nos filtros fornecidos e retorna resultados paginados.
+* **Parâmetros de Requisição:**
+    * `data` (string, opcional): Data no formato "dd/mm/aaaa".
+    * `ativo` (string, opcional): Filtro para o campo "TckrSymb".
+* **Parâmetros de Consulta:**
+    * `page` (integer, opcional): Número da página atual (padrão: 1).
+    * `per_page` (integer, opcional): Número de registros por página (padrão: 10).
+* **Resposta:**
+    * **200 OK:**
+        ```json
+        {
+            "registros": [
+                {"RptDt": "2024-01-15", "TckrSymb": "AAPL", "MktNm": "Apple Inc.", ...},
+                {"RptDt": "2024-01-15", "TckrSymb": "GOOG", "MktNm": "Google Inc.", ...}
+            ],
+            "pagina_atual": 1,
+            "total_paginas": 5
+        }
+        ```
+    * **500 Internal Server Error:** Erro interno do servidor.
